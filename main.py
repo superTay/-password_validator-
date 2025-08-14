@@ -63,31 +63,53 @@ def password_validation(password):
 
 
 # Example of usage
+# Ask the user if he wants sign in or sign up
 
-username_input, password_input = get_user_input()
+choice = input("Do you want to [1] Sign in or [2] Sign up? Enter 1 or 2: ")
 
-if check_user_exists(username_input, user_list):
-    # LOGIN FLOW
-    print("✅ User exists. Checking entered password...")
-    for user in user_list:
-        if user["username"] == username_input and user["password"] == password_input:
-            print("✅ Login successful!")
-            break
-    else:
-        print("❌ Incorrect password.")
+# Managing errors
 
-else:
-    # REGISTRATION FLOW
-    print("🆕 User does not exist. Creating account...")
-    while True:
-
-      is_valid, message = password_validation(password_input)
-      if is_valid:
-        user_list.append({"username": username_input, "password": password_input})
-        print("✅ Account created successfully!")
+while True:
+    choice = input("Do you want to [1] Sign in or [2] Sign up? Enter 1 or 2: ").strip()
+    if choice in ["1", "2"]:
         break
-      else:
-        print(message)
-        password_input = input("Please enter a valid password: ")
+    else:
+        print("❌ Invalid option. Please enter 1 for Sign in or 2 for Sign up.")
+
+
+if choice == "1":
+    # SIGN IN
+    username_input, password_input = get_user_input()
+    
+    if check_user_exists(username_input, user_list):
+        for user in user_list:
+            if user["username"] == username_input and user["password"] == password_input:
+                print("✅ Login successful!")
+                break
+        else:
+            print("❌ Incorrect password.")
+    else:
+        print("❌ User not found. Please sign up first.")
+
+elif choice == "2":
+    # SIGN UP
+    username_input = input("Choose a username: ")
+    
+    if check_user_exists(username_input, user_list):
+        print("❌ That username is already taken. Please choose another.")
+    else:
+        password_input = input("Choose a password: ")
+        while True:
+            is_valid, message = password_validation(password_input)
+            if is_valid:
+                user_list.append({"username": username_input, "password": password_input})
+                print("✅ Account created successfully!")
+                break
+            else:
+                print(message)
+                password_input = input("Please enter a valid password: ")
+else:
+    print("❌ Invalid option. Please restart the program.")
+
 
 
