@@ -78,7 +78,7 @@ while True:
 # ROUTING based on choice
 
 if choice == "1":
-    # SIGN IN
+    # SIGN IN FLOW
     username_input, password_input = get_user_input()
     
     if check_user_exists(username_input, user_list):
