@@ -1,7 +1,4 @@
 
-print("Now working on feature/auth-flow branch")
-
-
 # List of users
 user_list = [
     {"username": "user1", "password": "pass1234"},
@@ -21,7 +18,6 @@ def check_user_exists(username, user_list):
         if user["username"] == username:
             return True
     return False
-
 
 # Function that checks whether the entered password is valid
 # based on a set of security requirements.
@@ -68,22 +64,30 @@ def password_validation(password):
 
 # Example of usage
 
-# Ask the user for username and password
 username_input, password_input = get_user_input()
 
-# Check if the username exists in the user list
 if check_user_exists(username_input, user_list):
-    print("✅ User exists. Verifying password...")
-
-    # Validate the password based on the security requirements
-    is_valid, message = password_validation(password_input)
-
-    # Show the result of the password validation
-    if is_valid:
-        print("✅", message)
+    # LOGIN FLOW
+    print("✅ User exists. Checking entered password...")
+    for user in user_list:
+        if user["username"] == username_input and user["password"] == password_input:
+            print("✅ Login successful!")
+            break
     else:
-        print(message)
+        print("❌ Incorrect password.")
 
 else:
-    print("❌ User does not exist. Consider registering.")
+    # REGISTRATION FLOW
+    print("🆕 User does not exist. Creating account...")
+    while True:
+
+      is_valid, message = password_validation(password_input)
+      if is_valid:
+        user_list.append({"username": username_input, "password": password_input})
+        print("✅ Account created successfully!")
+        break
+      else:
+        print(message)
+        password_input = input("Please enter a valid password: ")
+
 
