@@ -132,37 +132,40 @@ def password_validation(password):
 
 
 # Example of usage
-# Ask the user if he wants sign in or sign up and managin errors
 
-print("Welcome!\n")
-
-# MENU: Ask once
-while True:
-    choice = input("Do you want to [1] Sign in or [2] Sign up? Enter 1 or 2: ").strip()
-    if choice in ["1", "2"]:
-        break
-    else:
-        print("❌ Invalid option. Please enter 1 for Sign in or 2 for Sign up.")
-
-# ROUTING based on choice
-
-if choice == "1":
-    # SIGN IN FLOW
-    username_input, password_input = sign_in()
-    
-    if check_user_exists(username_input, user_list):
-        for user in user_list:
-            if user["username"] == username_input and user["password"] == password_input:
-                print("✅ Login successful!")
-                break
+def main():
+    print("Welcome!\n")
+    # Ask the user if he wants sign in or sign up and managin errors
+    # MENU: Ask once
+    while True:
+        choice = input("Do you want to [1] Sign in or [2] Sign up? Enter 1 or 2: ").strip()
+        if choice in ["1", "2"]:
+            break
         else:
-            print("❌ Incorrect password.")
-    else:
-        print("❌ User not found. Please sign up first.")
+            print("❌ Invalid option. Please enter 1 for Sign in or 2 for Sign up.")
 
-elif choice == "2":
-    # SIGN UP FLOW
-    new_user, new_password = sign_up()
+    # ROUTING based on choice
+
+    if choice == "1":
+        # SIGN IN FLOW
+        username_input, password_input = sign_in()
+        
+        if check_user_exists(username_input, user_list):
+            for user in user_list:
+                if user["username"] == username_input and user["password"] == password_input:
+                    print("✅ Login successful!")
+                    break
+            else:
+                print("❌ Incorrect password.")
+        else:
+            print("❌ User not found. Please sign up first.")
+
+    elif choice == "2":
+        # SIGN UP FLOW
+        new_user, new_password = sign_up()
+
+if __name__ == "__main__":
+    main()
 
 
 
