@@ -5,8 +5,9 @@ user_list = [
     {"username": "user2", "password": "pass5678"},
 ]
 
-# Function to prompt the user for input
-def get_user_input():
+# Function to user sign in
+def sign_in():
+    
     username_input = input("Enter your username: ")
     password_input = input("Enter your password: ")
     return username_input, password_input
@@ -14,14 +15,82 @@ def get_user_input():
 # Function to check if the user exists
 
 def check_user_exists(username, user_list):
+    """
+    Checks if a given username exists in the provided user list.
+
+    Args:
+        username (str): The username to check.
+        user_list (list): List of user dictionaries with 'username' and 'password' keys.
+
+    Returns:
+        bool: True if the username exists, False otherwise.
+        """
     for user in user_list:
         if user["username"] == username:
             return True
     return False
 
+
+# Function to user sign up 
+def sign_up():
+    """
+    Handles user registration.
+    Asks the user to choose a unique username, then prompts for a strong password
+    until it meets all security requirements. Adds the new user to the user_list.
+
+    Returns:
+        tuple[str, str]: The username and password of the newly created account.
+        """
+     # Ask for a valid username
+
+    while True:
+        username_input = input("Choose a username: ").strip()
+        
+        # Check if username already exists in the user list
+        if check_user_exists(username_input, user_list):
+            print("❌ That username is already taken. Please choose another.")
+            continue  # Go back to the start of the loop and ask again
+        
+        # If we reach here, the username is available — break the loop
+        break
+
+    # Now that we have a valid username, ask for password
+    while True:
+        password_input = input("Choose a password: ").strip()
+        is_valid, message = password_validation(password_input)
+        if is_valid:
+            # Save the new user into the list
+            user_list.append({"username": username_input, "password": password_input})
+            print("✅ Account created successfully!")
+            return username_input, password_input  # Return the new credentials
+        else:
+            # Show all password rule errors and ask again
+            print(message)
+            print("Please try again with a stronger password.")
+            
+
+
 # Function that checks whether the entered password is valid
 # based on a set of security requirements.
 def password_validation(password):
+    """
+    Validates a password against security requirements.
+
+    The password must meet the following criteria:
+      - Minimum length of 8 characters.
+      - At least one uppercase letter.
+      - At least one number.
+      - At least one special character from the set: _ # *
+
+    Args:
+        password (str): The password string to validate.
+
+    Returns:
+        tuple[bool, str]:
+            - bool: True if the password meets all requirements, False otherwise.
+            - str: "Password is correct." if valid, or a concatenated string of error messages if invalid.
+            """
+    
     errors = []
 
     # Requirement 1: Minimum length of 8 characters
@@ -79,7 +148,7 @@ while True:
 
 if choice == "1":
     # SIGN IN FLOW
-    username_input, password_input = get_user_input()
+    username_input, password_input = sign_in()
     
     if check_user_exists(username_input, user_list):
         for user in user_list:
@@ -93,31 +162,7 @@ if choice == "1":
 
 elif choice == "2":
     # SIGN UP FLOW
-    while True:
-        username_input = input("Choose a username: ").strip()
-        
-        # Check if username already exists in the user list
-        if check_user_exists(username_input, user_list):
-            print("❌ That username is already taken. Please choose another.")
-            continue  # Go back to the start of the loop and ask again
-        
-        # If we reach here, the username is available — break the loop
-        break
-
-    # Now that we have a valid username, ask for password
-    while True:
-        password_input = input("Choose a password: ").strip()
-        is_valid, message = password_validation(password_input)
-        if is_valid:
-            # Save the new user into the list
-            user_list.append({"username": username_input, "password": password_input})
-            print("✅ Account created successfully!")
-            break
-        else:
-            # Show all password rule errors and ask again
-            print(message)
-            print("Please try again with a stronger password.")
-
+    new_user, new_password = sign_up()
 
 
 
