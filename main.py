@@ -1,4 +1,26 @@
 
+# Importing datetime library for log-decorator
+
+import datetime
+from functools import wraps
+
+# log - decorator function
+
+def log_call(func):
+   @wraps(func)
+   def wrapper(*args, **kwargs):
+       print(f"Function name: {func.__name__}")# Function name
+       fecha = datetime.datetime.now()
+       print(f"[{fecha.strftime('%Y-%m-%d %H:%M:%S')}] Called function: {func.__name__}")
+       print(f"Arguments: args={args}, kwargs={kwargs}")
+
+       result = func(*args, **kwargs)  # Execute the original function
+        
+       print(f"Result: {result}\n")  # Log the returned result
+       return result  # Return the result to maintain functionality
+
+   return wrapper
+
 # List of users
 user_list = [
     {"username": "user1", "password": "pass1234"},
@@ -6,14 +28,20 @@ user_list = [
 ]
 
 # Function to user sign in
+@log_call
 def sign_in():
-    
+    """
+    Prompts the user to enter their username and password.
+
+    Returns:
+        tuple[str, str]: A tuple containing the entered username and password.
+        """
     username_input = input("Enter your username: ")
     password_input = input("Enter your password: ")
     return username_input, password_input
 
 # Function to check if the user exists
-
+@log_call
 def check_user_exists(username, user_list):
     """
     Checks if a given username exists in the provided user list.
@@ -30,8 +58,8 @@ def check_user_exists(username, user_list):
             return True
     return False
 
-
-# Function to user sign up 
+# Function to user sign up
+@log_call 
 def sign_up():
     """
     Handles user registration.
@@ -72,6 +100,8 @@ def sign_up():
 
 # Function that checks whether the entered password is valid
 # based on a set of security requirements.
+
+@log_call
 def password_validation(password):
     """
     Validates a password against security requirements.
@@ -149,16 +179,24 @@ def main():
     if choice == "1":
         # SIGN IN FLOW
         username_input, password_input = sign_in()
-        
-        if check_user_exists(username_input, user_list):
-            for user in user_list:
-                if user["username"] == username_input and user["password"] == password_input:
-                    print("✅ Login successful!")
-                    break
-            else:
-                print("❌ Incorrect password.")
-        else:
+        # Check if the username exists before entering the loop
+        if not check_user_exists(username_input, user_list):
             print("❌ User not found. Please sign up first.")
+        else:
+        # Password retry loop
+            while True:
+                password_input = input("Enter your password: ")
+                for user in user_list:
+                    if user["username"] == username_input and user["password"] == password_input:
+                        print("✅ Login successful!")
+                        break  # Exit for loop
+                else:
+                # Only runs if no break occurred in the for loop
+                    print("❌ Incorrect password. Please try again.")
+                    continue  # Retry password
+
+                break  # If login was successful, exit while loop
+                             
 
     elif choice == "2":
         # SIGN UP FLOW
