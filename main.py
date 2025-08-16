@@ -4,6 +4,25 @@
 import datetime
 from functools import wraps
 
+# Custom exception classes
+class PasswordWeakError(Exception):
+    """Raised when the password does not meet security requirements."""
+    pass
+
+class UserAlreadyExistsError(Exception):
+    """Raised when trying to register a username that already exists."""
+    pass
+
+class UserNotFoundError(Exception):
+    """Raised when the username does not exist during sign in."""
+    pass
+
+class IncorrectPasswordError(Exception):
+    """Raised when password check fails."""
+    pass
+
+
+
 # log - decorator function
 
 def log_call(func):
@@ -76,7 +95,7 @@ def sign_up():
         
         # Check if username already exists in the user list
         if check_user_exists(username_input, user_list):
-            print("❌ That username is already taken. Please choose another.")
+            print ("❌ That username is already taken. Please choose another.")
             continue  # Go back to the start of the loop and ask again
         
         # If we reach here, the username is available — break the loop
@@ -84,16 +103,15 @@ def sign_up():
 
     # Now that we have a valid username, ask for password
     while True:
-        password_input = input("Choose a password: ").strip()
-        is_valid, message = password_validation(password_input)
-        if is_valid:
-            # Save the new user into the list
+        try:
+            password_input = input("Choose a password: ").strip()
+            password_validation(password_input)  # Esta función lanza excepción si es débil
+            # Si no lanza excepción, contraseña es válida
             user_list.append({"username": username_input, "password": password_input})
             print("✅ Account created successfully!")
-            return username_input, password_input  # Return the new credentials
-        else:
-            # Show all password rule errors and ask again
-            print(message)
+            return username_input, password_input
+        except PasswordWeakError as e:
+            print(e)
             print("Please try again with a stronger password.")
             
 
@@ -125,7 +143,7 @@ def password_validation(password):
 
     # Requirement 1: Minimum length of 8 characters
     if len(password) < 8:
-        errors.append(" ❌ The password must be at least 8 characters long.")
+        errors.append (" ❌ The password must be at least 8 characters long.")
 
     # Flags to track presence of different character types
     has_uppercase = False   # At least one uppercase letter
@@ -155,10 +173,11 @@ def password_validation(password):
         errors.append(" ❌ The password must contain at least one of these characters: _ # *")
 
     # Return results: False with error messages if criteria not met, else True with success message
+    
     if errors:
-        return False, "\n".join(errors)
-    else:
-        return True, "Password is correct."
+            raise PasswordWeakError("\n".join(errors))
+    
+    return True, "Password is correct."
 
 
 # Example of usage
@@ -168,39 +187,46 @@ def main():
     # Ask the user if he wants sign in or sign up and managin errors
     # MENU: Ask once
     while True:
-        choice = input("Do you want to [1] Sign in or [2] Sign up? Enter 1 or 2: ").strip()
-        if choice in ["1", "2"]:
+        try:
+            choice = input("Do you want to [1] Sign in or [2] Sign up? Enter 1 or 2: ").strip()
+            if choice not in ["1", "2"]:
+                print("❌ Invalid option. Please enter 1 for Sign in or 2 for Sign up.")
+                continue
+
+            if choice == "1":
+                # Sign in flow
+                username_input = input("Enter your username: ")
+                if not check_user_exists(username_input, user_list):
+                        print("❌ User not found. Please try again or sign up first.")
+                        retry = input("Try again? (y/n): ").strip().lower()
+                        if retry != "y":
+                            break  # Salir del bucle de sign in, vuelve al menú principal
+                        continue  # Repetir pedir username
+                while True:
+                    password_input = input("Enter your password: ")
+                    # Aquí puedes lanzar IncorrectPasswordError si la contraseña no coincide
+                    for user in user_list:
+                        if user["username"] == username_input and user["password"] == password_input:
+                            print("✅ Login successful!")
+                            break
+                    else:
+                        print("❌ Incorrect password. Please try again.")
+                        continue
+                    break
+
+            elif choice == "2":
+                # Sign up flow
+                new_user, new_password = sign_up()
+
+            break  # Breal loop if everything goes right
+
+        except UserNotFoundError as e:
+            print(e)
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+        except KeyboardInterrupt:
+            print("\nProcess interrupted by user. Exiting gracefully.")
             break
-        else:
-            print("❌ Invalid option. Please enter 1 for Sign in or 2 for Sign up.")
-
-    # ROUTING based on choice
-
-    if choice == "1":
-        # SIGN IN FLOW
-        username_input, password_input = sign_in()
-        # Check if the username exists before entering the loop
-        if not check_user_exists(username_input, user_list):
-            print("❌ User not found. Please sign up first.")
-        else:
-        # Password retry loop
-            while True:
-                password_input = input("Enter your password: ")
-                for user in user_list:
-                    if user["username"] == username_input and user["password"] == password_input:
-                        print("✅ Login successful!")
-                        break  # Exit for loop
-                else:
-                # Only runs if no break occurred in the for loop
-                    print("❌ Incorrect password. Please try again.")
-                    continue  # Retry password
-
-                break  # If login was successful, exit while loop
-                             
-
-    elif choice == "2":
-        # SIGN UP FLOW
-        new_user, new_password = sign_up()
 
 if __name__ == "__main__":
     main()
