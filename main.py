@@ -184,8 +184,7 @@ def password_validation(password):
 
 def main():
     print("Welcome!\n")
-    # Ask the user if he wants sign in or sign up and managin errors
-    # MENU: Ask once
+    # MENU LOOP: ask once until valid choice, then process sign in or sign up
     while True:
         try:
             choice = input("Do you want to [1] Sign in or [2] Sign up? Enter 1 or 2: ").strip()
@@ -194,42 +193,38 @@ def main():
                 continue
 
             if choice == "1":
-                # Sign in flow
-                username_input = input("Enter your username: ")
-                if not check_user_exists(username_input, user_list):
-                        print("❌ User not found. Please try again or sign up first.")
-                        retry = input("Try again? (y/n): ").strip().lower()
-                        if retry != "y":
-                            break  # Salir del bucle de sign in, vuelve al menú principal
-                        continue  # Repetir pedir username
+                # Sign in flow: nested loops for username and password input
                 while True:
-                    password_input = input("Enter your password: ")
-                    # Aquí puedes lanzar IncorrectPasswordError si la contraseña no coincide
-                    for user in user_list:
-                        if user["username"] == username_input and user["password"] == password_input:
-                            print("✅ Login successful!")
-                            break
-                    else:
-                        print("❌ Incorrect password. Please try again.")
-                        continue
-                    break
+                    username_input = input("Enter your username: ")
+                    if not check_user_exists(username_input, user_list):
+                        print("❌ User not found. Please try again or sign up first.")
+                        continue  # Repeat username input
+
+                    # Username exists, now ask repeatedly for password until correct
+                    while True:
+                        password_input = input("Enter your password: ")
+                        for user in user_list:
+                            if user["username"] == username_input and user["password"] == password_input:
+                                print("✅ Login successful!")
+                                break  # Exit password for-loop
+                        else:
+                            print("❌ Incorrect password. Please try again.")
+                            continue  # Repeat password input
+                        break  # Correct password, exit password loop
+                    break  # Username and password correct, exit sign-in loop
 
             elif choice == "2":
-                # Sign up flow
+                # Sign up flow with its own validations and loops
                 new_user, new_password = sign_up()
 
-            break  # Breal loop if everything goes right
+            break  # Exit main menu loop on successful sign in or sign up
 
-        except UserNotFoundError as e:
-            print(e)
-        except Exception as e:
-            print(f"An unexpected error occurred: {e}")
         except KeyboardInterrupt:
             print("\nProcess interrupted by user. Exiting gracefully.")
             break
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
 
-if __name__ == "__main__":
-    main()
-
+main()
 
 
