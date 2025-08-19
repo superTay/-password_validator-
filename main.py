@@ -3,6 +3,7 @@
 
 import datetime
 from functools import wraps
+import json
 
 # Custom exception classes
 class PasswordWeakError(Exception):
@@ -40,11 +41,6 @@ def log_call(func):
 
    return wrapper
 
-# List of users
-user_list = [
-    {"username": "user1", "password": "pass1234"},
-    {"username": "user2", "password": "pass5678"},
-]
 
 # Function to user sign in
 @log_call
@@ -58,6 +54,40 @@ def sign_in():
     username_input = input("Enter your username: ")
     password_input = input("Enter your password: ")
     return username_input, password_input
+
+# Check If a user_list exists, and If it does, load it from json. 
+
+def load_users_from_json():
+    """
+    Check If the file exists
+    """
+
+    try:
+
+        with open ("users.json", "r") as file:
+           user_list = json.load(file)
+           return user_list
+        
+    except FileNotFoundError:
+       return []
+  
+    except json.JSONDecodeError:
+       print("⚠️ The file users.json exists but does not contain valid data")
+       return []
+
+
+# Saving users
+
+def save_users_to_json(user_list):
+
+    """Open user list in writing mode. 
+    Then we save the user list (json.dump)
+    """
+    # file opening
+    with open ("users.json","w") as file:
+   # file saving with same structure
+      json.dump(user_list,file, indent=4)
+
 
 # Function to check if the user exists
 @log_call
@@ -76,6 +106,27 @@ def check_user_exists(username, user_list):
         if user["username"] == username:
             return True
     return False
+
+# Adding new user:
+
+def add_new_user(username, password):
+   # 1. Load the current list of users from the file (or empty list if it doesn't exist)
+   user_list = check_file()
+
+   # 2. Check if the user already exists to avoid duplicates
+   if check_user_exists(username, user_list):
+       print(f"❌ The user '{username}' already exists.")
+       return False  # Indicate that it was not added
+
+   # 3. If it doesn't exist, add the new user (dictionary) to the list
+   user_list.append({"username": username, "password": password})
+
+   # 4. Save the updated list of users to the JSON file
+   save_users_to_json(user_list)
+
+   print(f"✅ User '{username}' added successfully.")
+   return True  # Indicate success
+
 
 # Function to user sign up
 @log_call 
@@ -183,6 +234,9 @@ def password_validation(password):
 # Example of usage
 
 def main():
+    # Loading the user list
+    user_list = load_users_from_json()
+
     print("Welcome!\n")
     # MENU LOOP: ask once until valid choice, then process sign in or sign up
     while True:
