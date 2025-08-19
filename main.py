@@ -111,7 +111,7 @@ def check_user_exists(username, user_list):
 
 def add_new_user(username, password):
    # 1. Load the current list of users from the file (or empty list if it doesn't exist)
-   user_list = check_file()
+   user_list = load_users_from_json()
 
    # 2. Check if the user already exists to avoid duplicates
    if check_user_exists(username, user_list):
