@@ -130,7 +130,7 @@ def add_new_user(username, password):
 
 # Function to user sign up
 @log_call 
-def sign_up():
+def sign_up(user_list):
     """
     Handles user registration.
     Asks the user to choose a unique username, then prompts for a strong password
@@ -158,7 +158,6 @@ def sign_up():
             password_input = input("Choose a password: ").strip()
             password_validation(password_input)  # Esta función lanza excepción si es débil
             # Si no lanza excepción, contraseña es válida
-            user_list.append({"username": username_input, "password": password_input})
             print("✅ Account created successfully!")
             return username_input, password_input
         except PasswordWeakError as e:
@@ -269,7 +268,12 @@ def main():
 
             elif choice == "2":
                 # Sign up flow with its own validations and loops
-                new_user, new_password = sign_up()
+                new_user, new_password = sign_up(user_list)
+                #  Add the new user to the in-memory list
+                user_list.append({"username": new_user, "password": new_password})
+                # Save the updated user list to the JSON file for persistence
+                save_users_to_json(user_list)
+                print(f"✅ User '{new_user}' successfully registered and saved.")
 
             break  # Exit main menu loop on successful sign in or sign up
 
