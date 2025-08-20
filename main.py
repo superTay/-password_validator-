@@ -158,7 +158,6 @@ def sign_up(user_list):
             password_input = input("Choose a password: ").strip()
             password_validation(password_input)  # Esta función lanza excepción si es débil
             # Si no lanza excepción, contraseña es válida
-            user_list.append({"username": username_input, "password": password_input})
             print("✅ Account created successfully!")
             return username_input, password_input
         except PasswordWeakError as e:
