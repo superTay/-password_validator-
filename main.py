@@ -4,6 +4,7 @@
 import datetime
 from functools import wraps
 import json
+import os
 
 # log - decorator function
 
@@ -137,6 +138,7 @@ class UserManager:
             """
     def __init__(self, file_path="users.json"):
         self.file_path = file_path
+        print(f"Loading users from: {os.path.abspath(self.file_path)}")
         self.users = self.load_users()
 
     def load_users(self):
@@ -151,6 +153,16 @@ class UserManager:
         users_data = [{"username": u.username, "password": u.password} for u in self.users]
         with open(self.file_path, "w") as f:
             json.dump(users_data, f, indent=4)
+            print("Saved users list:", [u.username for u in self.users])
+
+        with open(self.file_path, "r") as f:
+            print("File content after save:", f.read())
+
+        import os
+        print(f"Saved users to: {os.path.abspath(self.file_path)}")
+        print("Content saved:")
+        print(json.dumps(users_data, indent=4))
+
 
 
     @log_call

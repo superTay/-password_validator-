@@ -1,34 +1,20 @@
 [
-    {
-        "username": "taylorman",
-        "password": "Benicarlo@1984"
-    },
-    {
-        "username": "elmejor",
-        "password": "Soyelmejordeblo41@"
-    },
-    {
-        "username": "elmejor",
-        "password": "Soyelmejordeblo41@"
-    },
-    {
-        "username": "elputoamo",
-        "password": "Servilleta@123"
-    },
-    {
-        "username": "elputoamo",
-        "password": "Servilleta@123"
-    },
-    {
-        "username": "rasputin",
-        "password": "ABCabecedario12#"
-    },
-    {
-        "username": "garibaldi",
-        "password": "Elmundoalreves1#"
-    },
-    {
-        "username": "benito",
-        "password": "Benito12@"
-    }
+  {
+    "username": "taylorman",
+    "password": "Benicarlo@1984"
+  },
+  {
+    "username": "elmejor",
+    "password": "Soyelmejordeblo41@"
+  },
+
+  {
+    "username": "elputoamo",
+    "password": "Servilleta@123"
+  },
+
+  {
+    "username": "rasputin",
+    "password": "ABCabecedario12#"
+  }
 ]
