@@ -22,6 +22,63 @@ class IncorrectPasswordError(Exception):
     """Raised when password check fails."""
     pass
 
+class PasswordValidator:
+    """
+    A utility class for validating the strength and security of user passwords.
+
+    This class provides a static method to verify that a given password meets 
+    specific security criteria, such as minimum length, inclusion of uppercase 
+    letters, digits, and special characters. If the password does not satisfy 
+    these requirements, a detailed exception is raised describing the unmet criteria.
+
+    Usage:
+        PasswordValidator.validate(password)
+
+    Where:
+        password (str): The password string to be validated.
+
+    Raises:
+        PasswordWeakError: If the password fails one or more security checks,
+                           containing a message detailing the issues.
+    """
+    @staticmethod
+    def validate(password: str):
+        errors = []
+
+        if len(password) < 8:
+            errors.append("La contraseña debe tener al menos 8 caracteres.")
+        if not any(c.isupper() for c in password):
+            errors.append("La contraseña debe tener al menos una letra mayúscula.")
+        if not any(c.isdigit() for c in password):
+            errors.append("La contraseña debe tener al menos un número.")
+        if not any(c in "_#*@" for c in password):
+            errors.append("La contraseña debe contener al menos uno de estos caracteres especiales: _ # * @")
+
+        if errors:
+            raise PasswordWeakError("\n".join(errors))
+
+class User:
+    """
+    Represents a system user with a username and password.
+
+    This class encapsulates the basic attributes of a user and provides 
+    a simple interface to access user information. Password validation 
+    is expected to be handled externally before instantiation.
+
+    Attributes:
+        username (str): The unique identifier for the user.
+        password (str): The user's password stored as a string.
+
+    Methods:
+        __str__: Returns a string representation of the user, displaying the username.
+    """
+    def __init__(self, username: str, password: str):
+        self.username = username
+        self.password = password
+
+    def __str__(self):
+        return f"User(username={self.username})"
+
 
 
 # log - decorator function
