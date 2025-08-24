@@ -64,13 +64,13 @@ class PasswordValidator:
         errors = []
 
         if len(password) < 8:
-            errors.append("La contraseña debe tener al menos 8 caracteres.")
+            errors.append("Password must be at least 8 characters long")
         if not any(c.isupper() for c in password):
-            errors.append("La contraseña debe tener al menos una letra mayúscula.")
+            errors.append("Password must contain at least one uppercase letter")
         if not any(c.isdigit() for c in password):
-            errors.append("La contraseña debe tener al menos un número.")
+            errors.append("Password must contain at least one number")
         if not any(c in "_#*@" for c in password):
-            errors.append("La contraseña debe contener al menos uno de estos caracteres especiales: _ # * @")
+            errors.append("Password must contain at least one special character: _ # * @")
 
         if errors:
             raise PasswordWeakError("\n".join(errors))
@@ -199,13 +199,18 @@ def main():
                 if retry != 'y':
                         break
         elif choice == "2":
+         while True:
             username = input("Username: ")
             password = input("Password: ")
             try:
                 user = user_manager.sign_in(username, password)
                 print(f"Welcome back, {user.username}!")
+                break
             except Exception as e:
                 print(f"Error: {e}")
+                retry = input("Try again? (y/n): ").lower()
+                if retry != 'y':
+                 break
         elif choice == "0":
             print("Goodbye!")
             break
