@@ -5,6 +5,23 @@ import datetime
 from functools import wraps
 import json
 
+# log - decorator function
+
+def log_call(func):
+   @wraps(func)
+   def wrapper(*args, **kwargs):
+       print(f"Function name: {func.__name__}")# Function name
+       fecha = datetime.datetime.now()
+       print(f"[{fecha.strftime('%Y-%m-%d %H:%M:%S')}] Called function: {func.__name__}")
+       print(f"Arguments: args={args}, kwargs={kwargs}")
+
+       result = func(*args, **kwargs)  # Execute the original function
+        
+       print(f"Result: {result}\n")  # Log the returned result
+       return result  # Return the result to maintain functionality
+
+   return wrapper
+
 # Custom exception classes
 class PasswordWeakError(Exception):
     """Raised when the password does not meet security requirements."""
@@ -42,6 +59,7 @@ class PasswordValidator:
                            containing a message detailing the issues.
     """
     @staticmethod
+    @log_call
     def validate(password: str):
         errors = []
 
@@ -80,263 +98,115 @@ class User:
         return f"User(username={self.username})"
 
 
-
-# log - decorator function
-
-def log_call(func):
-   @wraps(func)
-   def wrapper(*args, **kwargs):
-       print(f"Function name: {func.__name__}")# Function name
-       fecha = datetime.datetime.now()
-       print(f"[{fecha.strftime('%Y-%m-%d %H:%M:%S')}] Called function: {func.__name__}")
-       print(f"Arguments: args={args}, kwargs={kwargs}")
-
-       result = func(*args, **kwargs)  # Execute the original function
-        
-       print(f"Result: {result}\n")  # Log the returned result
-       return result  # Return the result to maintain functionality
-
-   return wrapper
-
-
-# Function to user sign in
-@log_call
-def sign_in():
+class UserManager:
     """
-    Prompts the user to enter their username and password.
+    Manages a collection of User objects, including user registration,
+    authentication, and persistence to a JSON file.
 
-    Returns:
-        tuple[str, str]: A tuple containing the entered username and password.
-        """
-    username_input = input("Enter your username: ")
-    password_input = input("Enter your password: ")
-    return username_input, password_input
+    This class handles loading users from a file, saving updates, checking
+    existence of usernames, signing up new users with password validation,
+    and signing in existing users with credential verification.
 
-# Check If a user_list exists, and If it does, load it from json. 
+    Attributes:
+        file_path (str): The path to the JSON file storing user data.
+        users (list[User]): The list of User objects currently managed.
 
-def load_users_from_json():
-    """
-    Check If the file exists
-    """
+    Methods:
+        load_users() -> list[User]:
+            Loads and returns a list of User objects from the JSON file.
+            Returns an empty list if the file does not exist.
 
-    try:
+        save_users() -> None:
+            Saves the current list of User objects to the JSON file,
+            serializing them to dictionaries.
 
-        with open ("users.json", "r") as file:
-           user_list = json.load(file)
-           return user_list
-        
-    except FileNotFoundError:
-       return []
-  
-    except json.JSONDecodeError:
-       print("⚠️ The file users.json exists but does not contain valid data")
-       return []
+        user_exists(username: str) -> bool:
+            Checks if a user with the given username exists in the managed list.
+            Returns True if the username is found, False otherwise.
 
+        sign_up(username: str, password: str) -> None:
+            Registers a new user with the specified username and password.
+            Validates that the username is unique and the password meets security requirements.
+            Raises UserAlreadyExistsError or PasswordWeakError on failure.
 
-# Saving users
-
-def save_users_to_json(user_list):
-
-    """Open user list in writing mode. 
-    Then we save the user list (json.dump)
-    """
-    # file opening
-    with open ("users.json","w") as file:
-   # file saving with same structure
-      json.dump(user_list,file, indent=4)
-
-
-# Function to check if the user exists
-@log_call
-def check_user_exists(username, user_list):
-    """
-    Checks if a given username exists in the provided user list.
-
-    Args:
-        username (str): The username to check.
-        user_list (list): List of user dictionaries with 'username' and 'password' keys.
-
-    Returns:
-        bool: True if the username exists, False otherwise.
-        """
-    for user in user_list:
-        if user["username"] == username:
-            return True
-    return False
-
-# Adding new user:
-
-def add_new_user(username, password):
-   # 1. Load the current list of users from the file (or empty list if it doesn't exist)
-   user_list = load_users_from_json()
-
-   # 2. Check if the user already exists to avoid duplicates
-   if check_user_exists(username, user_list):
-       print(f"❌ The user '{username}' already exists.")
-       return False  # Indicate that it was not added
-
-   # 3. If it doesn't exist, add the new user (dictionary) to the list
-   user_list.append({"username": username, "password": password})
-
-   # 4. Save the updated list of users to the JSON file
-   save_users_to_json(user_list)
-
-   print(f"✅ User '{username}' added successfully.")
-   return True  # Indicate success
-
-
-# Function to user sign up
-@log_call 
-def sign_up(user_list):
-    """
-    Handles user registration.
-    Asks the user to choose a unique username, then prompts for a strong password
-    until it meets all security requirements. Adds the new user to the user_list.
-
-    Returns:
-        tuple[str, str]: The username and password of the newly created account.
-        """
-     # Ask for a valid username
-
-    while True:
-        username_input = input("Choose a username: ").strip()
-        
-        # Check if username already exists in the user list
-        if check_user_exists(username_input, user_list):
-            print ("❌ That username is already taken. Please choose another.")
-            continue  # Go back to the start of the loop and ask again
-        
-        # If we reach here, the username is available — break the loop
-        break
-
-    # Now that we have a valid username, ask for password
-    while True:
-        try:
-            password_input = input("Choose a password: ").strip()
-            password_validation(password_input)  # Esta función lanza excepción si es débil
-            # Si no lanza excepción, contraseña es válida
-            print("✅ Account created successfully!")
-            return username_input, password_input
-        except PasswordWeakError as e:
-            print(e)
-            print("Please try again with a stronger password.")
+        sign_in(username: str, password: str) -> User:
+            Authenticates a user by username and password.
+            Returns the corresponding User object on success.
+            Raises UserNotFoundError or IncorrectPasswordError if authentication fails.
             
-# Function that checks whether the entered password is valid
-# based on a set of security requirements.
-
-@log_call
-def password_validation(password):
-    """
-    Validates a password against security requirements.
-
-    The password must meet the following criteria:
-      - Minimum length of 8 characters.
-      - At least one uppercase letter.
-      - At least one number.
-      - At least one special character from the set: _ # *
-
-    Args:
-        password (str): The password string to validate.
-
-    Returns:
-        tuple[bool, str]:
-            - bool: True if the password meets all requirements, False otherwise.
-            - str: "Password is correct." if valid, or a concatenated string of error messages if invalid.
             """
-    
-    errors = []
+    def __init__(self, file_path="users.json"):
+        self.file_path = file_path
+        self.users = self.load_users()
 
-    # Requirement 1: Minimum length of 8 characters
-    if len(password) < 8:
-        errors.append (" ❌ The password must be at least 8 characters long.")
+    def load_users(self):
+        try:
+            with open(self.file_path, "r") as f:
+                users_data = json.load(f)
+            return [User(u["username"], u["password"]) for u in users_data]
+        except FileNotFoundError:
+            return []
 
-    # Flags to track presence of different character types
-    has_uppercase = False   # At least one uppercase letter
-    has_number = False      # At least one digit
-    special_characters = "_#*@"  # Allowed special characters
-    has_special = False     # At least one of the allowed special characters
+    def save_users(self):
+        users_data = [{"username": u.username, "password": u.password} for u in self.users]
+        with open(self.file_path, "w") as f:
+            json.dump(users_data, f, indent=4)
 
-    # Check each character in the password
-    for char in password:
-        if char.isupper():          # Requirement 2: Uppercase letter
-            has_uppercase = True
-        if char.isdigit():          # Requirement 3: Number
-            has_number = True
-        if char in special_characters:  # Requirement 4: Special character
-            has_special = True
 
-    # Validate uppercase letter requirement
-    if not has_uppercase:
-        errors.append(" ❌ The password must contain at least one uppercase letter.")
+    @log_call
+    def user_exists(self, username: str) -> bool:
+        return any(u.username == username for u in self.users)
 
-    # Validate number requirement
-    if not has_number:
-        errors.append(" ❌ The password must contain at least one number.")
+    @log_call
+    def sign_up(self, username: str, password: str):
+        if self.user_exists(username):
+            raise UserAlreadyExistsError(f"El usuario '{username}' ya existe.")
 
-    # Validate special character requirement
-    if not has_special:
-        errors.append(" ❌ The password must contain at least one of these characters: _ # *")
+        PasswordValidator.validate(password)  # Validar antes de crear
 
-    # Return results: False with error messages if criteria not met, else True with success message
-    
-    if errors:
-            raise PasswordWeakError("\n".join(errors))
-    
+        new_user = User(username, password)
+        self.users.append(new_user)
+        self.save_users()
 
+    @log_call
+    def sign_in(self, username: str, password: str):
+        for user in self.users:
+            if user.username == username:
+                if user.password == password:
+                    return user
+                else:
+                    raise IncorrectPasswordError("Contraseña incorrecta.")
+        raise UserNotFoundError("Usuario no encontrado.")
 
 # Example of usage
 
 def main():
-    # Loading the user list
-    user_list = load_users_from_json()
+    user_manager = UserManager()
 
-    print("Welcome!\n")
-    # MENU LOOP: ask once until valid choice, then process sign in or sign up
     while True:
-        try:
-            choice = input("Do you want to [1] Sign in or [2] Sign up? Enter 1 or 2: ").strip()
-            if choice not in ["1", "2"]:
-                print("❌ Invalid option. Please enter 1 for Sign in or 2 for Sign up.")
-                continue
-
-            if choice == "1":
-                # Sign in flow: nested loops for username and password input
-                while True:
-                    username_input = input("Enter your username: ")
-                    if not check_user_exists(username_input, user_list):
-                        print("❌ User not found. Please try again or sign up first.")
-                        continue  # Repeat username input
-
-                    # Username exists, now ask repeatedly for password until correct
-                    while True:
-                        password_input = input("Enter your password: ")
-                        for user in user_list:
-                            if user["username"] == username_input and user["password"] == password_input:
-                                print("✅ Login successful!")
-                                break  # Exit password for-loop
-                        else:
-                            print("❌ Incorrect password. Please try again.")
-                            continue  # Repeat password input
-                        break  # Correct password, exit password loop
-                    break  # Username and password correct, exit sign-in loop
-
-            elif choice == "2":
-                # Sign up flow with its own validations and loops
-                new_user, new_password = sign_up(user_list)
-                #  Add the new user to the in-memory list
-                user_list.append({"username": new_user, "password": new_password})
-                # Save the updated user list to the JSON file for persistence
-                save_users_to_json(user_list)
-                print(f"✅ User '{new_user}' successfully registered and saved.")
-
-            break  # Exit main menu loop on successful sign in or sign up
-
-        except KeyboardInterrupt:
-            print("\nProcess interrupted by user. Exiting gracefully.")
+        choice = input("Enter 1 to Sign Up, 2 to Sign In, 0 to Exit: ")
+        if choice == "1":
+            username = input("Username: ")
+            password = input("Password: ")
+            try:
+                user_manager.sign_up(username, password)
+                print("User registered successfully.")
+            except Exception as e:
+                print(f"Error: {e}")
+        elif choice == "2":
+            username = input("Username: ")
+            password = input("Password: ")
+            try:
+                user = user_manager.sign_in(username, password)
+                print(f"Welcome back, {user.username}!")
+            except Exception as e:
+                print(f"Error: {e}")
+        elif choice == "0":
+            print("Goodbye!")
             break
-        except Exception as e:
-            print(f"An unexpected error occurred: {e}")
+        else:
+            print("Invalid option. Try again.")
 
-main()
-
+if __name__ == "__main__":
+    main()
 
