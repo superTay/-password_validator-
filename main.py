@@ -160,7 +160,7 @@ class UserManager:
     @log_call
     def sign_up(self, username: str, password: str):
         if self.user_exists(username):
-            raise UserAlreadyExistsError(f"El usuario '{username}' ya existe.")
+            raise UserAlreadyExistsError(f"The user '{username}' already exists.")
 
         PasswordValidator.validate(password)  # Validar antes de crear
 
@@ -175,8 +175,8 @@ class UserManager:
                 if user.password == password:
                     return user
                 else:
-                    raise IncorrectPasswordError("Contraseña incorrecta.")
-        raise UserNotFoundError("Usuario no encontrado.")
+                    raise IncorrectPasswordError("Incorrect Password.")
+        raise UserNotFoundError("User Not Found.")
 
 # Example of usage
 
@@ -186,13 +186,18 @@ def main():
     while True:
         choice = input("Enter 1 to Sign Up, 2 to Sign In, 0 to Exit: ")
         if choice == "1":
+         while True:
             username = input("Username: ")
             password = input("Password: ")
             try:
                 user_manager.sign_up(username, password)
                 print("User registered successfully.")
+                break
             except Exception as e:
                 print(f"Error: {e}")
+                retry = input("Try again? (y/n): ").lower()
+                if retry != 'y':
+                        break
         elif choice == "2":
             username = input("Username: ")
             password = input("Password: ")
